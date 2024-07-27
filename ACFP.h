@@ -52,11 +52,11 @@ struct Parser<T>
         T v;
         auto const [ptr, ec] = std::from_chars(sv.begin(), sv.end(), v);
         if (ec == std::errc::result_out_of_range)
-            throw std::range_error("String '{}' not representible in type {}", sv, typeid(T).name());
+            throw std::range_error(std::format("String '{}' not representible in type {}", sv, typeid(T).name()));
         if (ec == std::errc::invalid_argument)
-            throw std::invalid_argument("String '{}' is not a valid {}", sv, typeid(T).name());
+            throw std::invalid_argument(std::format("String '{}' is not a valid {}", sv, typeid(T).name()));
         if (ec != std::errc{})
-            throw std::runtime_error("Unknown error while parsing '{}' as a {}", sv, typeid(T).name());
+            throw std::runtime_error(std::format("Unknown error while parsing '{}' as a {}", sv, typeid(T).name()));
         return v;
     }
 };
