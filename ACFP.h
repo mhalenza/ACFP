@@ -64,12 +64,14 @@ struct Parser<T>
 };
 
 template <typename T>
+inline
 T parse(std::string_view sv)
 {
     return Parser<T>::parse(sv);
 }
 
 template <typename T>
+inline
 std::optional<T> parse(std::optional<std::string_view> osv)
 {
     if (osv.has_value()) {
@@ -240,6 +242,7 @@ std::size_t findEqPos(std::string_view line)
     return findFirstNotQuoted(line, '=');
 }
 
+inline
 ConfigTable parseConfigFile(std::istream& is)
 {
     ConfigTable ct;
@@ -294,6 +297,7 @@ ConfigTable parseConfigFile(std::istream& is)
 
     return ct;
 }
+inline
 ConfigTable  parseConfigFile(std::filesystem::path filename)
 {
     std::ifstream ifs;
