@@ -248,7 +248,6 @@ ConfigTable parseConfigFile(std::istream& is)
     ConfigTable ct;
 
     auto* cur_section = &ct.getSection("").getSubsection("");
-    uint32_t line_num = 1;
     std::string line_string;
     for (uint32_t line_num = 1 ; std::getline(is, line_string) ; line_num++) {
         std::string_view line = line_string;
