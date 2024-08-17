@@ -14,6 +14,19 @@
 
 namespace ACFP {
 
+class ConfigFileParseException : public std::runtime_error
+{
+public:
+    ConfigFileParseException(std::string const& msg) : std::runtime_error(msg) {}
+    ConfigFileParseException(char const* msg) : std::runtime_error(msg) {}
+};
+class ConfigValueConvertException : public std::runtime_error
+{
+public:
+    ConfigValueConvertException(std::string const& msg) : std::runtime_error(msg) {}
+    ConfigValueConvertException(char const* msg) : std::runtime_error(msg) {}
+};
+
 template <typename T>
 struct Parser
 {
@@ -41,7 +54,7 @@ struct Parser<bool>
                     return true;
             }
         }
-        throw std::domain_error(std::format("Could not parse '{}' as bool", sv));
+        throw ConfigValueConvertException(std::format("Could not parse '{}' as bool", sv));
     }
 };
 
@@ -54,11 +67,11 @@ struct Parser<T>
         T v;
         auto const [ptr, ec] = std::from_chars(sv.begin(), sv.end(), v);
         if (ec == std::errc::result_out_of_range)
-            throw std::range_error(std::format("String '{}' not representible in type {}", sv, typeid(T).name()));
+            throw ConfigValueConvertException(std::format("String '{}' not representible in type {}", sv, typeid(T).name()));
         if (ec == std::errc::invalid_argument)
-            throw std::invalid_argument(std::format("String '{}' is not a valid {}", sv, typeid(T).name()));
+            throw ConfigValueConvertException(std::format("String '{}' is not a valid {}", sv, typeid(T).name()));
         if (ec != std::errc{})
-            throw std::runtime_error(std::format("Unknown error while parsing '{}' as a {}", sv, typeid(T).name()));
+            throw ConfigValueConvertException(std::format("Unknown error while parsing '{}' as a {}", sv, typeid(T).name()));
         return v;
     }
 };
@@ -231,7 +244,7 @@ void trimStringQuotes(std::string_view& sv, uint16_t line_num, char front = '"',
     if (sv.front() == front) {
         sv.remove_prefix(1);
         if (sv.size() == 0 || sv.back() != back) {
-            throw std::runtime_error(std::format("Unfished quoted string on line {}: '{}'", line_num, sv));
+            throw ConfigFileParseException(std::format("Unfished quoted string on line {}: '{}'", line_num, sv));
         }
         sv.remove_suffix(1);
     }
@@ -282,7 +295,7 @@ ConfigTable parseConfigFile(std::istream& is)
             // Key/Value
             auto const eq_pos = findEqPos(line);
             if (eq_pos == std::string_view::npos)
-                throw std::runtime_error(std::format("Malformed line on line {}: '{}'", line_num, line));
+                throw ConfigFileParseException(std::format("Malformed line on line {}: '{}'", line_num, line));
             auto key = line.substr(0, eq_pos);
             trimStringViewEnds(key);
             trimStringQuotes(key, line_num);
